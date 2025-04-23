@@ -4,9 +4,6 @@ import { useAppStore } from "@/store/store.js";
 const Profile = () => {
   const { userInfo } = useAppStore();
 
-  // if (!user) {
-  //   return <div>Loading user info...</div>; // or null/redirect/etc.
-  // }
 
   return (
     <div>

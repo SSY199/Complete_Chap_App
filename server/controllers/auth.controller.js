@@ -23,9 +23,10 @@ export const signup = async (req, res) => {
     // 4. Generate token and set cookie
     const token = createToken(email, user._id);
     res.cookie("jwt", token, {
-      httpOnly: true,  // Recommended for security
-      maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days (simpler than `expires`)
+      httpOnly: true,
+      secure: true, // ✅ Required with SameSite: "None"
       sameSite: "None",
+      maxAge: 3 * 24 * 60 * 60 * 1000,
     });
 
     // 5. Omit sensitive data in response
@@ -89,27 +90,27 @@ export const login = async (req, res, next) => {
   }
 };
 
-// export const getUserInfo = async (req, res, next) => {
-//   try {
-//     //console.log(req.userId);
-//     const userData = await User.findById(req.userId);
-//     if (!userData) {
-//       return res.status(404).json({ message: "User not found." });
-//     }
-//     return res.status(200).json({
-//       email: userData.email,
-//       id: userData._id,
-//       profileSetup: userData.profileSetup,
-//       firstName: userData.firstname,
-//       lastName: userData.lastname,
-//       image: userData.image,
-//       color: userData.color,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+export const getUserInfo = async (req, res, next) => {
+  try {
+  console.log(req.userId);
+    const userData = await User.findById(req.userId);
+    if (!userData) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    return res.status(200).json({
+      email: userData.email,
+      id: userData._id,
+      profileSetup: userData.profileSetup,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      image: userData.image,
+      color: userData.color,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // export const updateProfile = async (req, res, next) => {
 //   try {
