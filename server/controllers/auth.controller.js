@@ -1,6 +1,7 @@
 import { compare } from "bcrypt";
 import User from "../models/auth.model.js";
 import jwt from "jsonwebtoken";
+import { unlinkSync, renameSync } from "fs";
 
 const createToken = (email, userId) => {
   return jwt.sign({ email, userId }, process.env.JWT_SECRET, { expiresIn: "3d" });
@@ -112,88 +113,98 @@ export const getUserInfo = async (req, res, next) => {
   }
 };
 
-// export const updateProfile = async (req, res, next) => {
-//   try {
-//     const { userId } = req;
-//     const { firstName, lastName, color } = req.body;
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { userId } = req;
+    const { firstName, lastName, color } = req.body;
 
-//     if (!firstName || !lastName) {
-//       return res
-//         .status(400)
-//         .json({ message: "Firstname, Lastname and color are required." });
-//     }
+    if (!firstName || !lastName) {
+      return res
+        .status(400)
+        .json({ message: "Firstname, Lastname and color are required." });
+    }
 
-//     const userData = await User.findByIdAndUpdate(
-//       userId,
-//       {
-//         firstname: firstName, // Use "firstname" as per the schema
-//         lastname: lastName,   // Use "lastname" as per the schema
-//         color,
-//         profileSetup: true,
-//       },
-//       { new: true, runValidators: true }
-//     );
+    const userData = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName,
+        lastName,
+        color,
+        profileSetup: true,
+      },
+      { new: true, runValidators: true }
+    );
 
-//     return res.status(200).json({
-//       email: userData.email,
-//       id: userData._id,
-//       profileSetup: userData.profileSetup,
-//       firstName: userData.firstname, // Return "firstname" as "firstName"
-//       lastName: userData.lastname,   // Return "lastname" as "lastName"
-//       image: userData.image,
-//       color: userData.color,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+    return res.status(200).json({
+      email: userData.email,
+      id: userData._id,
+      profileSetup: userData.profileSetup,
+      firstName: userData.firstName, // Return "firstname" as "firstName"
+      lastName: userData.lastName,   // Return "lastname" as "lastName"
+      image: userData.image,
+      color: userData.color,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: error.message });
+  }
+};
 
-// export const updateProfileImage = async (req, res, next) => {
-//   try {
-//     const { userId } = req;
-//     if (!req.file) {
-//       return res.status(400).json({ message: "No file uploaded." });
-//     }
+export const updateProfileImage = async (req, res, next) => {
+  try {
+    const { userId } = req;
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
+    }
 
-//     const imagePath = `uploads/profiles/${req.file.filename}`;
-//     const updatedUser = await User.findByIdAndUpdate(
-//       userId,
-//       { image: imagePath },
-//       { new: true, runValidators: true }
-//     );
+    const date = Date.now();
+    let filename = "uploads/profiles/" + date + req.file.originalname;
+    renameSync(req.file.path, filename); // Rename the file to include the date
 
-//     return res.status(200).json({
-//       image: updatedUser.image,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      { image: filename },
+      { new: true, runValidators: true }
+    );
 
-// export const deleteProfileImage = async (req, res, next) => {
-//   try {
-//     const { userId } = req;
-//     const userData = await User.findById(userId);
-//     if (!userData) {
-//       return res.status(404).json({ message: "User not found." });
-//     }
-//     if (userData.image) {
-//       try {
-//         unlinkSync(userData.image); // Ensure this path is correct
-//       } catch (err) {
-//         console.error("Error deleting file:", err);
-//       }
-//     }
-//     userData.image = null;
-//     await userData.save();
-//     return res.status(200).json({ message: "Image deleted successfully." });
-//   } catch (error) {
-//     console.error("Error in deleteProfileImage:", error);
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+    return res.status(200).json({
+      image: updatedUser.image,
+    });
+
+    // const imagePath = `uploads/profiles/${req.file.filename}`;
+    // const updatedUser = await User.findByIdAndUpdate(
+    //   userId,
+    //   { image: imagePath },
+    //   { new: true, runValidators: true }
+    // );
+
+    // return res.status(200).json({
+    //   image: updatedUser.image,
+    // });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteProfileImage = async (req, res, next) => {
+  try {
+    const { userId } = req;
+    const userData = await User.findById(userId);
+    if (!userData) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    if (userData.image) {
+      unlinkSync(userData.image); 
+    }
+    userData.image = null;
+    await userData.save();
+    return res.status(200).json({ message: "Image deleted successfully." });
+  } catch (error) {
+    console.error("Error in deleteProfileImage:", error);
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // export const logout = async (req, res, next) => {
 //   try {
