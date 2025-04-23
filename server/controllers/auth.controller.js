@@ -63,7 +63,7 @@ export const login = async (req, res, next) => {
     }
 
     const token = createToken(email, user._id);
-    //console.log("Generated JWT Token:", token); // Debug log
+
 
     res.cookie("jwt", token, {
       secure: true,

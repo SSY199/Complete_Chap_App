@@ -10,9 +10,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client.js";
 import { LOGIN_ROUTES, SIGNUP_ROUTES } from "@/utils/constants.js";
+import { useAppStore } from "@/store/store.js";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { setUserInfo } = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -68,14 +70,19 @@ const Auth = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        console.log(res.data);
+        
+        if(res.status === 200) {
+          toast.success("Login successful!");
         if(res.data.user.profileSetup) {
+          console.log("User info received:", res.data.user);
+          setUserInfo(res.data.user);
           navigate("/chat");
         } else {
           navigate("/profile");
         }
-
-      } catch (err) {
+      }
+      console.log(res.data);
+    } catch (err) {
         console.error("Login error:", err.response?.data || err.message);
       }
     }
@@ -94,6 +101,8 @@ const Auth = () => {
         );
         console.log(res.data);
         if(res.status === 201) {
+          console.log("User info received:", res.data.user);
+          setUserInfo(res.data.user);
           toast.success("Signup successful! Please login.");
           navigate("/profile");
         }

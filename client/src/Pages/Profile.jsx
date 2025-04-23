@@ -1,9 +1,20 @@
-import React from 'react'
+import React from "react";
+import { useAppStore } from "@/store/store.js";
 
 const Profile = () => {
-  return (
-    <div>Profile</div>
-  )
-}
+  const { userInfo } = useAppStore();
 
-export default Profile
+  // if (!user) {
+  //   return <div>Loading user info...</div>; // or null/redirect/etc.
+  // }
+
+  return (
+    <div>
+      <h1>Welcome, {userInfo.firstName || "User"}!</h1>
+      <p>Email: {userInfo.email}</p>
+      <img src={userInfo.image} alt="Profile" />
+    </div>
+  );
+};
+
+export default Profile;
