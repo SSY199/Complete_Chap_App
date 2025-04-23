@@ -5,18 +5,105 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-//import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-//import { toast } from "sonner";
+import { toast } from "sonner";
+import apiClient from "@/lib/api-client.js";
+import { LOGIN_ROUTES, SIGNUP_ROUTES } from "@/utils/constants.js";
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = async () => {};
+  const validateSignup = () => {
+    if (!email.length && !password.length && !confirmPassword.length) {
+      toast.error("Email and Password are required!");
+      return false;
+    }
+    if(!email.length) {
+      toast.error("Email is required!");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return false;
+    }
+    if (password.length < 5) {
+      toast.error("Password must be at least 5 characters long!");
+      return false;
+    }
+    if(!password.length) {
+      toast.error("Password is required!");
+      return false;
+    }
+    return true;
+  }
 
-  const handleSignup = async () => {};
+  const validateLogin = () => {
+    if (!email.length && !password.length) {
+      toast.error("Email and Password are required!");
+      return false;
+    }
+    if(!email.length) {
+      toast.error("Email is required!");
+      return false;
+    }
+    if(!password.length) {
+      toast.error("Password is required!");
+      return false;
+    }
+    return true;
+  }
+
+  const handleLogin = async () => {
+    if (validateLogin()) {
+      try {
+        const res = await apiClient.post(
+          LOGIN_ROUTES,
+          { email, password },
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        console.log(res.data);
+        if(res.data.user.profileSetup) {
+          navigate("/chat");
+        } else {
+          navigate("/profile");
+        }
+
+      } catch (err) {
+        console.error("Login error:", err.response?.data || err.message);
+      }
+    }
+  };
+
+  const handleSignup = async () => {
+    if (validateSignup()) {
+      try {
+        const res = await apiClient.post(
+          SIGNUP_ROUTES,
+          { email, password },
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+        console.log(res.data);
+        if(res.status === 201) {
+          toast.success("Signup successful! Please login.");
+          navigate("/profile");
+        }
+
+      } catch (err) {
+        console.error("Signup error:", err.response?.data || err.message);
+      }
+    }
+  };
+  
 
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">

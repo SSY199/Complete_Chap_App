@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose, { mongo } from "mongoose";
 import cookieParser from "cookie-parser";
-// import authRoutes from "./routes/auth.route.js";
+import authRoutes from "./routes/auth.route.js";
 // import contactsRoutes from "./routes/contact.route.js";
 // import setupSocket from "./socket.js";
 
@@ -26,7 +26,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 // app.use("/api/contacts", contactsRoutes);
 
 
